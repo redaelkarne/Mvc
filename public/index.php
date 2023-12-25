@@ -3,7 +3,10 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use App\Controller\IndexController;
+use App\Controller\NewsletterController;
 use App\Controller\ProductController;
+use App\DependencyInjection\Container;
+use App\Repository\ProductRepository;
 use App\Routing\Exception\RouteNotFoundException;
 use App\Routing\Route;
 use App\Routing\Router;
@@ -41,13 +44,7 @@ $config = ORMSetup::createAttributeMetadataConfiguration($paths, $isDevMode);
 $connection = DriverManager::getConnection($dbParams, $config);
 $entityManager = new EntityManager($connection, $config);
 
-// $user = new User();
-// $user
-//     ->setEmail("haf@teci.gw")
-//     ->setPassword(password_hash("test", PASSWORD_BCRYPT));
-
-// $entityManager->persist($user);
-// $entityManager->flush();
+$productRepository = new ProductRepository($entityManager);
 // -----------------------------------------------------------
 
 // --- TWIG --------------------------------------------------
@@ -61,19 +58,18 @@ $twig = new Environment(
 );
 // -----------------------------------------------------------
 
-// --- ROUTER ------------------------------------------------
-$router = new Router($twig);
+// --- SERVICE CONTAINER -------------------------------------
+$container = new Container();
 
-$router
-    ->addRoute(
-        new Route('/', 'home', 'GET', IndexController::class, 'home')
-    )
-    ->addRoute(
-        new Route('/contact', 'contact', 'GET', IndexController::class, 'contact')
-    )
-    ->addRoute(
-        new Route('/products', 'products_list', 'GET', ProductController::class, 'list')
-    );
+$container
+    ->set(Environment::class, $twig)
+    ->set(EntityManager::class, $entityManager)
+    ->set(ProductRepository::class, $productRepository);
+// -----------------------------------------------------------
+
+// --- ROUTER ------------------------------------------------
+$router = new Router($container);
+$router->registerRoutes();
 // -----------------------------------------------------------
 
 if (php_sapi_name() === 'cli') {
