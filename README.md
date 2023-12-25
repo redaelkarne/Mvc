@@ -1,64 +1,80 @@
-# Rendus MVC
+# MVC rendu Reda El Karne
+# Symfony Console
+cet exemple  présente l'envoi d'e-mails via la console en utilisant Symfony Console. Un exemple générique utilise la bibliothèque PHPMailer pour envoyer un e-mail de test. Les paramètres SMTP sont configurés pour utiliser MailHog.
+### Fonctionnement 
+ - Commande Symfony Console : La commande test:email envoie un e-mail de test.
+ - PHPMailer : La bibliothèque PHPMailer est utilisée pour gérer l'envoi d'e-mails.
+ - Configuration SMTP : Les paramètres du serveur SMTP sont définis pour utiliser MailHog.
 
-## Twig : définition d'une extension pour créer des URL dynamiquement
+# Conteneur d'injection de dépendances avec Chargement Différé (lazy loading)
+Cet parti illustre l'implémentation d'un conteneur d'injection de dépendances personnalisé avec des capacités de chargement différé. Le chargement différé garantit que les services ne sont créés que lorsqu'ils sont demandés, optimisant ainsi l'utilisation des ressources dans l'application.
+### Fonctionnement 
+- Définitions de Services : Vous pouvez ajouter des définitions de services au conteneur, qui sont des fonctions appelables responsables de la création effective de l'instance du service.
 
-- Création d'une fonction Twig `path` à laquelle on passerait le nom d'une route, et qui nous renverrait l'URL correspondante
+- Chargement Différé : Lorsqu'un service est demandé, le conteneur vérifie s'il a déjà été créé. Si ce n'est pas le cas, il utilise la définition fournie pour instancier le service, garantissant que les services sont chargés uniquement lorsqu'ils sont nécessaires.
 
-## Paramètres d'URL
+Cette approche permet la création différée des services, offrant une manière efficace de gérer les ressources dans une application PHP.
 
-- Pour gérer des URL comme `/products/5` ou bien `/products/mon-produit`, donc avec des parties **variables**
-- Définir un composant applicatif capable d'identifier et d'extraire un paramètre d'URL pour ensuite pouvoir l'injecter au sein d'un contrôleur
-- Pour une route donnée, si on a une URL type `/products/{id}` par exemple, alors faire en sorte que `/products/5` sache reconnaître le valeur 5 et la fournir en tant que paramètre du contrôleur
-- Un contrôleur ressemblerait donc à un truc comme ça :
+# Authentification, Gestion de Session et Autorisations dans MVC
+Pour intégrer l'authentification, la gestion de session et les autorisations dans mon application MVC,j'ai suivie les étapes :
+#### Authentification :
 
-```php
-#[Route('/products/{id}', 'product_item', 'GET')]
-public function item(ProductRepository $repo, int $id)
-{
-    $product = $repo->find($id);
-    //...
-}
-```
+- Créez un formulaire de login dans ma vue, puis un contrôleur qui gère la soumission du formulaire en utilisant la méthode POST.
+#### Gestion de la session :
 
-## Instanciation dynamique de services
+- Créez un service de gestion de session (SessionManager) pour interagir avec $_SESSION.
+#### Autorisations :
 
-- Aujourd'hui, notre container contient des instances déjà créées de services applicatifs
-- Il pourrait être intéressant de changer ce fonctionnement pour qu'un service soit créé dynamiquement lorsqu'on en a besoin
+- Créez un attribut d'autorisation qui peut être appliqué au-dessus d'un contrôleur. Dans cet exemple, ajoutons un attribut @Auth.
 
-## Réalisation d'un service d'upload de fichiers
+Par manque de temps j'ai pas arrive a utilise l'Oauth2 de microsoft que j'utilise deja a l'entreprise pour un acces client 
+## la Fonction path ( définition d'une extension pour créer des URL dynamiquement)
+J'ai ajoute La fonction path ma framework pour permettre la génération dynamique d'URLs dans les modèles Twig. Voici comment elle fonctionne :
+- Injection du Routeur : Dans le constructeur de mon AbstractController, le routeur est injecté. Cela permet au contrôleur d'avoir accès aux fonctionnalités de routage.
 
-- Depuis un contrôleur réceptionnant les données d'un formulaire, création et utilisation d'un service d'upload de fichiers
-- Le but serait de consommer une instance de classe à laquelle on passerait, par exemple, un dossier de destination, un fichier entrant, etc...
-- On pourrait alors définir des contraintes de validation (type du fichier, taille maximale, etc...) et renvoyer une erreur en fonction de la situation
+- Méthode getPath : Une nouvelle méthode, getPath, est ajoutée à l'AbstractController. Cette méthode prend le nom de la route en paramètre ainsi qu'un tableau optionnel de paramètres, et elle utilise le routeur pour générer l'URL correspondante.
+# PHP TEST 
+#### instalation 
+```composer require --dev phpunit/phpunit```
+#### Écriture de Tests
+- Crée les Fichiers de Test : Pour chaque classe, écris des fichiers de test en utilisant les fonctionnalités de PHPUnit
+ #### Exécution des Tests
+- Exécution Globale : Dans le terminal, lance la commande suivante pour exécuter tous les tests :
+vendor/bin/phpunit```
+- Exécution Spécifique : Tu peux aussi lancer des tests spécifiques en indiquant le chemin du fichier de test. Par exemple 
+```vendor/bin/phpunit tests/Routing/RouterTest.php```
 
-## Installation et utilisation de symfony/http-foundation
 
-- Le composant `symfony/http-foundation` définit deux classes majeures `Request` et `Response`, qui pourraient être utilisées au sein du MVC
-- La classe `Request` contient également une méthode statique `createFromGlobals` permettant de construire un objet `Request` contenant déjà les données `GET`, `POST`, `FILES`, etc...
-- On pourrait donc faire utilisation de ce composant pour améliorer la structure du MVC
 
-## Définition de commandes dans la console
 
-- Intégration du composant `symfony/console` pour créer des commandes accessibles depuis le terminal
-- L'idée est de pouvoir définir des commandes personnalisées, comme par exemple :
-  - Envoyer un email de test
-  - Créer un utilisateur administrateur avec son mot de passe déjà haché
-  - Créer un ensemble de données de tests (fixtures), avec des données fakes (on pourra installer un composant type `fakerphp/faker`)
 
-## Définition d'une suite de tests
 
-- Installation de PHPUnit puis écriture de tests unitaires pour des classes comme `App\Routing\Router`, `App\DependencyInjection\Container`, etc...
 
-## Authentification/Autorisation
 
-- Authentification au sein de l'application (user/mot de passe) via un formulaire de login donc un contrôleur avec la méthode POST
-- Gestion de la session en cas d'authentification réussie : écriture d'un service de gestion de session qui permettrait, via un objet, d'interagir avec le tableau superglobal `$_SESSION`
-- Pour les autorisations : écriture d'un attribut applicable au-dessus d'un contrôleur, qui permettrait d'indiquer si on doit être connecté ou non pour accéder au contrôleur
-- Note : pas besoin de faire des rôles
 
-## Refactorisation du routeur & de la configuration
 
-- Point de départ : Le routeur fait trop de choses
-- Création d'une classe permettant de piloter et organiser le routeur et l'injection des services
-- On pourrait imaginer une classe _principale_ type `App` ou `Kernel` qui regrouperait le routeur, pour la fourniture des routes, et le container de services, pour la fourniture des services
-- On pourrait donc regrouper l'initialisation et la configuration de services dans cette classe, puis l'exécution du routeur avec le container, etc...dans une méthode type `handle` ou `dispatch`...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
